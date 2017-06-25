@@ -9,22 +9,28 @@ import csv
 from lxml import etree
 
 def load_config(config_file):
+    global input_file, query_file, result_file
     with open(config_file) as config:
-        global input_file, query_file, result_file
-        input_file = config.readline().replace('LEIA=', '').rstrip()
-        query_file = config.readline().replace('CONSULTAS=', '').rstrip()
-        result_file = config.readline().replace('ESPERADOS=', '').rstrip()
-        
+        for line in config:
+            operation = line.rstrip().split('=')[0]
+            file = line.rstrip().split('=')[1]
+            if(operation == 'LEIA'):
+                input_file = file
+            elif(operation == 'CONSULTAS'):
+                query_file = file
+            elif(operation == 'ESPERADOS'):
+                result_file = file
+  
 def read_queries(input_file):
     parser = etree.XMLParser(dtd_validation=True)
     filequery = etree.parse(input_file, parser)
     
-    for query in filequery.getroot().iterchildren():
-        for element in query.iterchildren():
-            print(element.tag, element.text)
-            for item in element.iterchildren():
-                print(item.tag, item.attrib, item.text)
-        print("-------------------------------")
+    #for query in filequery.getroot().iterchildren():
+    #    for element in query.iterchildren():
+    #        print(element.tag, element.text)
+    #        for item in element.iterchildren():
+    #            print(item.tag, item.attrib, item.text)
+    #    print("-------------------------------")
     return filequery
 
 def process_queries(queries, query_file):
