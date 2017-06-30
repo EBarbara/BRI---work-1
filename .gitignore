@@ -99,11 +99,7 @@ ENV/
 
 # mypy
 .mypy_cache/
-cfquery.xml
-cfcquery-2.dtd
-pc.cfg
-queries.csv
-expected.csv
 *.xml
 *.dtd
 *.cfg
+*.csv

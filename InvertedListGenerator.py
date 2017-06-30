@@ -26,7 +26,7 @@ def read_data(input_file):
         for element in record.iterchildren():
             if(element.tag == 'RECORDNUM'):
                 print(element.tag, element.text)
-            elif(element.tag == 'ABSTRACT'):
+            if(element.tag == 'ABSTRACT'):
                 print(element.tag, element.text)
             elif(element.tag == 'EXTRACT'):
                 print(element.tag, element.text)
