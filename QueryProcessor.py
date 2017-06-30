@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sun Jun 25 08:16:19 2017
-
-@author: Estevan
-"""
-
 import csv
 from lxml import etree
 
