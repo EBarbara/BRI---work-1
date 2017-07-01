@@ -52,7 +52,8 @@ class InvertedListGenerator(object):
 
         for index, value in self.documents.items():
             for word in value:
-                self.list[word].append(index)
+                upper_word = word.upper()
+                self.list[upper_word].append(index)
         static.log_execution_time('Generating inverted list', self.logger, start_time)
 
     def write_list(self):
