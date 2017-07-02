@@ -1,15 +1,9 @@
 import csv
 import os
-import static
+
 from lxml import etree
 
-
-def calculate_votes(score):
-    result = 0
-    while score:
-        result += score % 10
-        score //= 10
-    return result
+import static
 
 
 class QueryProcessor(object):
@@ -46,8 +40,8 @@ class QueryProcessor(object):
                     self.processed_queries[query_number]['results'] = {}
                     for item in element.iterchildren():
                         document = int(item.text)
-                        votes = calculate_votes(int(item.attrib.get("score")))
-                        self.processed_queries[query_number]['results'][document] = calculate_votes(votes)
+                        votes = static.calculate_votes(int(item.attrib.get("score")))
+                        self.processed_queries[query_number]['results'][document] = static.calculate_votes(votes)
         static.log_execution_time('Processing queries', self.logger, start_time)
 
     def write_processed_queries(self):
@@ -55,11 +49,10 @@ class QueryProcessor(object):
         filename = os.path.basename(self.processed_queries_file)
         self.logger.info('Writing Processed Queries File {0}'.format(filename))
         with open(self.processed_queries_file, 'w+') as csv_file:
-            field_names = ['query', 'words']
+            field_names = ['query', 'text']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
-            writer.writeheader()
             for query in self.processed_queries:
-                writer.writerow({'query': query, 'words': self.processed_queries[query]['text']})
+                writer.writerow({'query': query, 'text': self.processed_queries[query]['text']})
         static.log_execution_time('Writing Processed Queries File {0}'.format(filename), self.logger, start_time)
 
     def write_expected_results(self):
@@ -69,7 +62,6 @@ class QueryProcessor(object):
         with open(self.expected_results_file, 'w+') as csv_file:
             field_names = ['query', 'document', 'votes']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
-            writer.writeheader()
             for query in self.processed_queries:
                 results = self.processed_queries[query]['results']
                 for document in results:

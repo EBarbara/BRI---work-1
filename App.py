@@ -4,6 +4,7 @@ from collections import defaultdict
 from Indexer import Indexer
 from InvertedListGenerator import InvertedListGenerator
 from QueryProcessor import QueryProcessor
+from Searcher import Searcher
 
 
 class App(object):
@@ -12,9 +13,10 @@ class App(object):
 
     '''
     Eu tentei usar o módulo configparser, mas não encontrei nenhuma forma de fazê-lo 
-    trabalhar com listas de opções em Python3 (como no gli.cfg, onde temos vários
-    arquivos de entrada). Assim, preferi criar meu próprio leitor de configurações
+    trabalhar com listas de opções em Python3 (no gli.cfg, temos vários arquivos de 
+    entrada). Assim, preferi criar meu próprio leitor de configurações
     '''
+
     def read_configuration_file(self, file):
         start_time = static.get_current_time()
         filename = os.path.basename(file)
@@ -42,15 +44,19 @@ class App(object):
         query_processor = QueryProcessor(config, self.logger)
         query_processor.execute()
 
+    def search(self):
+        config = self.read_configuration_file('config/busca.cfg')
+        searcher = Searcher(config, self.logger)
+        searcher.execute()
+
     def execute(self):
         start_time = static.get_current_time()
         self.logger.info('Starting BRI Exercise 1')
-        #self.generate_inverted_index()
-        #self.index_model()
+        self.generate_inverted_index()
+        self.index_model()
         self.process_queries()
+        self.search()
         static.log_execution_time('BRI Exercise 1', self.logger, start_time)
-
-
 
 
 app = App()

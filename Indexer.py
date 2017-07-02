@@ -2,6 +2,7 @@ import ast
 import csv
 import os
 from collections import defaultdict
+
 from math import log
 
 import static
@@ -24,7 +25,6 @@ class Indexer(object):
         with open(self.input_file) as csv_file:
             field_names = ['word', 'documents']
             reader = csv.DictReader(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
-            next(reader, None)  # skip the header - since the lib doesn't know to do it automatically
 
             for line in reader:
                 # Eliminando as palavras irrelevantes da lista invertida (palavras
@@ -43,10 +43,12 @@ class Indexer(object):
         for word, documents in self.inverted_list.items():
             documents_occurred = list(set(documents))
             idf = self.calculate_idf(documents_occurred)
+            document_data = {}
             for document in documents_occurred:
                 tf = self.calculate_tf(word, document)
                 weight = tf * idf
-                self.model[(word, document)] = weight
+                document_data[document] = weight
+            self.model[word] = (idf, document_data)
         static.log_execution_time('Generating vectorial model', self.logger, start_time)
 
     def calculate_idf(self, documents_occurred):
@@ -60,11 +62,10 @@ class Indexer(object):
         filename = os.path.basename(self.output_file)
         self.logger.info('Writing Output File {0}'.format(filename))
         with open(self.output_file, 'w+') as csv_file:
-            field_names = ['word', 'document', 'weight']
+            field_names = ['word', 'data']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
-            writer.writeheader()
-            for pair in self.model:
-                writer.writerow({'word': pair[0], 'document': pair[1], 'weight': self.model[pair]})
+            for word in self.model:
+                writer.writerow({'word': word, 'data': self.model[word]})
         static.log_execution_time('Writing Output File {0}'.format(filename), self.logger, start_time)
 
     def execute(self):
