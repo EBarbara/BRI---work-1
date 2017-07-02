@@ -3,6 +3,7 @@ import static
 from collections import defaultdict
 from Indexer import Indexer
 from InvertedListGenerator import InvertedListGenerator
+from QueryProcessor import QueryProcessor
 
 
 class App(object):
@@ -36,12 +37,20 @@ class App(object):
         indexer = Indexer(config, self.logger)
         indexer.execute()
 
+    def process_queries(self):
+        config = self.read_configuration_file('config/pc.cfg')
+        query_processor = QueryProcessor(config, self.logger)
+        query_processor.execute()
+
     def execute(self):
         start_time = static.get_current_time()
         self.logger.info('Starting BRI Exercise 1')
-        self.generate_inverted_index()
-        self.index_model()
+        #self.generate_inverted_index()
+        #self.index_model()
+        self.process_queries()
         static.log_execution_time('BRI Exercise 1', self.logger, start_time)
+
+
 
 
 app = App()

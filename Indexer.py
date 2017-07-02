@@ -9,19 +9,19 @@ import static
 
 class Indexer(object):
     def __init__(self, config, logger):
+        super(Indexer, self).__init__()
         self.logger = logger
-        self.input = config.get('LEIA')
-        self.output = config.get('ESCREVA')
+        self.input_file = config.get('LEIA')[0]
+        self.output_file = config.get('ESCREVA')[0]
         self.inverted_list = defaultdict(list)
         self.document_list = []
         self.model = {}
 
     def read_inverted_list(self):
         start_time = static.get_current_time()
-        input_file = self.input[0]
-        filename = os.path.basename(input_file)
+        filename = os.path.basename(self.input_file)
         self.logger.info('Reading inverted list from file {0}'.format(filename))
-        with open(input_file) as csv_file:
+        with open(self.input_file) as csv_file:
             field_names = ['word', 'documents']
             reader = csv.DictReader(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
             next(reader, None)  # skip the header - since the lib doesn't know to do it automatically
@@ -57,10 +57,9 @@ class Indexer(object):
 
     def write_model(self):
         start_time = static.get_current_time()
-        output_file = self.output[0]
-        filename = os.path.basename(output_file)
+        filename = os.path.basename(self.output_file)
         self.logger.info('Writing Output File {0}'.format(filename))
-        with open(output_file, 'w+') as csv_file:
+        with open(self.output_file, 'w+') as csv_file:
             field_names = ['word', 'document', 'weight']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
             writer.writeheader()

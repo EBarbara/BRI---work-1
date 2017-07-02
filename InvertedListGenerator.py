@@ -60,9 +60,9 @@ class InvertedListGenerator(object):
         output_file = self.output[0]
         filename = os.path.basename(output_file)
         self.logger.info('Writing Output File {0}'.format(filename))
-        with open(output_file, 'w+') as csvfile:
+        with open(output_file, 'w+') as csv_file:
             field_names = ['word', 'documents']
-            writer = csv.DictWriter(csvfile, delimiter=';', lineterminator='\n', fieldnames=field_names)
+            writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
             writer.writeheader()
             for word in self.list:
                 writer.writerow({'word': word, 'documents': self.list[word]})
