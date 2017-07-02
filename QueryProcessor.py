@@ -6,6 +6,14 @@ from lxml import etree
 import static
 
 
+def calculate_votes(score):
+    result = 0
+    while score:
+        result += score % 10
+        score //= 10
+    return result
+
+
 class QueryProcessor(object):
     def __init__(self, config, logger):
         self.config = config
@@ -40,8 +48,8 @@ class QueryProcessor(object):
                     self.processed_queries[query_number]['results'] = {}
                     for item in element.iterchildren():
                         document = int(item.text)
-                        votes = static.calculate_votes(int(item.attrib.get("score")))
-                        self.processed_queries[query_number]['results'][document] = static.calculate_votes(votes)
+                        votes = calculate_votes(int(item.attrib.get("score")))
+                        self.processed_queries[query_number]['results'][document] = calculate_votes(votes)
         static.log_execution_time('Processing queries', self.logger, start_time)
 
     def write_processed_queries(self):

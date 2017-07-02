@@ -119,7 +119,7 @@ class Searcher(object):
             query_vector_length = calculate_query_vector_length(query_vector)
             self.query_document_rank[query] = self.calculate_document_rank(query_vector, query_vector_length)
 
-            static.log_execution_time('Running query {0}'.format(query), self.logger, start_time)
+            static.log_execution_time('Running query {0}'.format(query), self.logger, query_time)
         static.log_execution_time('Running Searches', self.logger, start_time)
 
     def calculate_document_rank(self, query_vector, query_vector_length):
