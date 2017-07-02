@@ -66,7 +66,7 @@ class InvertedListGenerator(object):
             writer.writeheader()
             for word in self.list:
                 writer.writerow({'word': word, 'documents': self.list[word]})
-        static.log_execution_time('Reading Output File {0}'.format(filename), self.logger, start_time)
+        static.log_execution_time('Writing Output File {0}'.format(filename), self.logger, start_time)
 
     def execute(self):
         start_time = static.get_current_time()
