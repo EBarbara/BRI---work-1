@@ -39,7 +39,7 @@ class App(object):
     def execute(self):
         start_time = static.get_current_time()
         self.logger.info('Starting BRI Exercise 1')
-        # self.generate_inverted_index()
+        self.generate_inverted_index()
         self.index_model()
         static.log_execution_time('BRI Exercise 1', self.logger, start_time)
 
