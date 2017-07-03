@@ -1,9 +1,9 @@
 import csv
-import os
+from os.path import basename
 
 from lxml import etree
 
-import static
+from Module import Module
 
 
 def calculate_votes(score):
@@ -14,28 +14,30 @@ def calculate_votes(score):
     return result
 
 
-class QueryProcessor(object):
-    def __init__(self, config, logger):
-        self.config = config
-        self.logger = logger
+class QueryProcessor(Module):
+    def __init__(self, config_file):
+        super().__init__('Query Processor Module', 'logs\QueryProcessor.log')
+        filename = basename(config_file)
+        self.logger.log_start_activity('Reading Configuration File %s' % filename)
+
+        config = self.read_configuration_file(config_file)
         self.input_file = config.get('LEIA')[0]
         self.processed_queries_file = config.get('CONSULTAS')[0]
         self.expected_results_file = config.get('ESPERADOS')[0]
         self.raw_queries = None
         self.processed_queries = {}
+        self.logger.log_ending_activity()
 
     def read_raw_queries(self):
-        start_time = static.get_current_time()
-        filename = os.path.basename(self.input_file)
-        self.logger.info('Reading raw query data from file {0}'.format(filename))
+        filename = basename(self.input_file)
+        self.logger.log_start_activity('Reading raw query data from file {0}'.format(filename))
         parser = etree.XMLParser(dtd_validation=True)
         self.raw_queries = etree.parse(self.input_file, parser)
-        static.log_execution_time('Reading raw query data from file {0}'.format(filename), self.logger, start_time)
+        self.logger.log_ending_activity()
 
     # Acho que reinventei a roda - esse dicionário de dicionários, quando impresso vira basicamente um JSON
     def process_queries(self):
-        start_time = static.get_current_time()
-        self.logger.info('Starting Processing queries')
+        self.logger.log_start_activity('Processing queries')
         for raw_query in self.raw_queries.getroot().iterchildren():
             for element in raw_query.iterchildren():
                 if element.tag == 'QueryNumber':
@@ -50,23 +52,21 @@ class QueryProcessor(object):
                         document = int(item.text)
                         votes = calculate_votes(int(item.attrib.get("score")))
                         self.processed_queries[query_number]['results'][document] = calculate_votes(votes)
-        static.log_execution_time('Processing queries', self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def write_processed_queries(self):
-        start_time = static.get_current_time()
-        filename = os.path.basename(self.processed_queries_file)
-        self.logger.info('Writing Processed Queries File {0}'.format(filename))
+        filename = basename(self.processed_queries_file)
+        self.logger.log_start_activity('Writing Processed Queries File {0}'.format(filename))
         with open(self.processed_queries_file, 'w+') as csv_file:
             field_names = ['query', 'text']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
             for query in self.processed_queries:
                 writer.writerow({'query': query, 'text': self.processed_queries[query]['text']})
-        static.log_execution_time('Writing Processed Queries File {0}'.format(filename), self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def write_expected_results(self):
-        start_time = static.get_current_time()
-        filename = os.path.basename(self.expected_results_file)
-        self.logger.info('Writing Expected Results File {0}'.format(filename))
+        filename = basename(self.expected_results_file)
+        self.logger.log_start_activity('Writing Expected Results File {0}'.format(filename))
         with open(self.expected_results_file, 'w+') as csv_file:
             field_names = ['query', 'document', 'votes']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
@@ -74,13 +74,10 @@ class QueryProcessor(object):
                 results = self.processed_queries[query]['results']
                 for document in results:
                     writer.writerow({'query': query, 'document': document, 'votes': results[document]})
-        static.log_execution_time('Writing Expected Results File {0}'.format(filename), self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def execute(self):
-        start_time = static.get_current_time()
-        self.logger.info('Starting Query Processor Module')
         self.read_raw_queries()
         self.process_queries()
         self.write_processed_queries()
         self.write_expected_results()
-        static.log_execution_time('Query Processor Module', self.logger, start_time)

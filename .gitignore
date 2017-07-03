@@ -1,6 +1,5 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
-*.py[cod]
 *$py.class
 
 # C extensions
@@ -101,7 +100,6 @@ ENV/
 .mypy_cache/
 *.xml
 .idea/
-config/
 csv/
 logs/
 xml/

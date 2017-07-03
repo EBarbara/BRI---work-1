@@ -1,12 +1,12 @@
 import csv
-import os
 from ast import literal_eval
 from collections import defaultdict
-
 from math import sqrt
+from os.path import basename
+
 from nltk import word_tokenize, OrderedDict
 
-import static
+from Module import Module
 
 
 def calculate_max(words):
@@ -27,11 +27,13 @@ def calculate_query_vector_length(word_array):
     return sqrt(value)
 
 
-class Searcher(object):
-    def __init__(self, config, logger):
-        self.config = config
-        self.logger = logger
+class Searcher(Module):
+    def __init__(self, config_file):
+        super().__init__('Searcher Module', 'logs\Searcher.log')
+        filename = basename(config_file)
+        self.logger.log_start_activity('Reading Configuration File %s' % filename)
 
+        config = self.read_configuration_file(config_file)
         self.queries_file = config.get('CONSULTAS')[0]
         self.model_file = config.get('MODELO')[0]
         self.results_file = config.get('RESULTADOS')[0]
@@ -42,10 +44,11 @@ class Searcher(object):
         self.document_length = {}
         self.query_document_rank = {}
 
+        self.logger.log_ending_activity()
+
     def read_model(self):
-        start_time = static.get_current_time()
-        filename = os.path.basename(self.model_file)
-        self.logger.info('Starting Reading vector space model from file {0}'.format(filename))
+        filename = basename(self.model_file)
+        self.logger.log_start_activity('Reading vector space model from file {0}'.format(filename))
         with open(self.model_file) as csv_file:
             field_names = ['word', 'data']
             reader = csv.DictReader(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
@@ -57,12 +60,11 @@ class Searcher(object):
                 for document in self.model[word][1]:
                     idf = self.model[word][0]
                     self.model_documents[document].append((word, idf))
-        static.log_execution_time('Reading vector space model from file {0}'.format(filename), self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def read_queries(self):
-        start_time = static.get_current_time()
-        filename = os.path.basename(self.queries_file)
-        self.logger.info('Starting Reading processed queries from file {0}'.format(filename))
+        filename = basename(self.queries_file)
+        self.logger.log_start_activity('Reading processed queries from file {0}'.format(filename))
         with open(self.queries_file) as csv_file:
             field_names = ['query', 'words']
             reader = csv.DictReader(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
@@ -76,11 +78,10 @@ class Searcher(object):
                 for word in words:
                     if len(word) > 2 and word.isalpha():
                         self.queries[query].append(word)
-        static.log_execution_time('Reading processed queries from file {0}'.format(filename), self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def calculate_document_vector_length(self):
-        start_time = static.get_current_time()
-        self.logger.info('Starting Calculating length of document vectors')
+        self.logger.log_start_activity('Calculating length of document vectors')
         for document in self.model_documents:
             data_vector = self.model_documents[document]
             value = 0
@@ -90,7 +91,7 @@ class Searcher(object):
                     value = value + idw_value ** 2
             vector_length = sqrt(value)
             self.document_length[document] = vector_length
-        static.log_execution_time('Calculating length of document vectors', self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def normalize_tf_query(self, word, query):
         tf = self.queries[query].count(word)
@@ -109,18 +110,13 @@ class Searcher(object):
         return query_vector
 
     def run_searches(self):
-        start_time = static.get_current_time()
-        self.logger.info('Starting Running Searches')
+        self.logger.log_start_activity('Running Searches')
         for query in self.queries:
-            query_time = static.get_current_time()
-            self.logger.info('Starting running query {0}'.format(query))
-
+            self.logger.log_info('running query {0}'.format(query))
             query_vector = self.build_query_vector(query)
             query_vector_length = calculate_query_vector_length(query_vector)
             self.query_document_rank[query] = self.calculate_document_rank(query_vector, query_vector_length)
-
-            static.log_execution_time('Running query {0}'.format(query), self.logger, query_time)
-        static.log_execution_time('Running Searches', self.logger, start_time)
+        self.logger.log_ending_activity_averaged('query', len(self.queries))
 
     def calculate_document_rank(self, query_vector, query_vector_length):
         words = query_vector.keys()
@@ -147,22 +143,18 @@ class Searcher(object):
         return document_rank
 
     def write_results(self):
-        start_time = static.get_current_time()
-        filename = os.path.basename(self.results_file)
-        self.logger.info('Writing Results File {0}'.format(filename))
+        filename = basename(self.results_file)
+        self.logger.log_start_activity('Writing Results File {0}'.format(filename))
         with open(self.results_file, 'w+') as csv_file:
             field_names = ['query', 'results']
             writer = csv.DictWriter(csv_file, delimiter=';', lineterminator='\n', fieldnames=field_names)
             for query in self.query_document_rank:
                 writer.writerow({'query': query, 'results': self.query_document_rank[query]})
-        static.log_execution_time('Writing Results File {0}'.format(filename), self.logger, start_time)
+        self.logger.log_ending_activity()
 
     def execute(self):
-        start_time = static.get_current_time()
-        self.logger.info('Starting Searcher Module')
         self.read_model()
         self.read_queries()
         self.calculate_document_vector_length()
         self.run_searches()
         self.write_results()
-        static.log_execution_time('Searcher Module', self.logger, start_time)
