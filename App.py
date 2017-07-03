@@ -29,33 +29,18 @@ class App(object):
         static.log_execution_time('Reading Configuration File %s' % filename, self.logger, start_time)
         return config
 
-    def generate_inverted_index(self):
-        config = self.read_configuration_file('config/gli.cfg')
-        inverted_list_generator = InvertedListGenerator(config, self.logger)
-        inverted_list_generator.execute()
-
-    def index_model(self):
-        config = self.read_configuration_file('config/index.cfg')
-        indexer = Indexer(config, self.logger)
-        indexer.execute()
-
-    def process_queries(self):
-        config = self.read_configuration_file('config/pc.cfg')
-        query_processor = QueryProcessor(config, self.logger)
-        query_processor.execute()
-
-    def search(self):
-        config = self.read_configuration_file('config/busca.cfg')
-        searcher = Searcher(config, self.logger)
-        searcher.execute()
+    def run_module(self, module_class, config_file):
+        config = self.read_configuration_file(config_file)
+        module_obj = module_class(config, self.logger)
+        module_obj.execute()
 
     def execute(self):
         start_time = static.get_current_time()
         self.logger.info('Starting BRI Exercise 1')
-        self.generate_inverted_index()
-        self.index_model()
-        self.process_queries()
-        self.search()
+        self.run_module(QueryProcessor, 'config/pc.cfg')
+        self.run_module(InvertedListGenerator, 'config/gli.cfg')
+        self.run_module(Indexer, 'config/index.cfg')
+        self.run_module(Searcher, 'config/busca.cfg')
         static.log_execution_time('BRI Exercise 1', self.logger, start_time)
 
 
