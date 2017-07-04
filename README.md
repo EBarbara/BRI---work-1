@@ -12,6 +12,7 @@ Organização das pastas
 - Código fonte e arquivos de descrição (readme e modelo) na raiz
 - config: Arquivos .cfg para configurar os módulos
 - csv: Arquivos .csv como resultados dos processamentos
+  - Arquivo resultados.csv também é salvo nessa pasta
 - logs: Arquivos .log com os logs de execução dos módulos
 - xml: Arquivos .xml (e .dtd) com os dados de entrada do exercício
 
